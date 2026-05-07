@@ -1,0 +1,79 @@
+// ================================
+// 🛡️ ABHAY SECURITY SYSTEM
+// Full Basic Backend (Node.js)
+// ================================
+
+const express = require("express");
+const bodyParser = require("body-parser");
+const crypto = require("crypto");
+
+const app = express();
+app.use(bodyParser.json());
+
+// ================================
+// 🔐 DEMO DATABASE
+// ================================
+
+let users = {};
+let balances = {
+    "8400355496": 500
+};
+
+// ================================
+// 🔑 OTP SYSTEM
+// ================================
+
+// Send OTP
+app.post("/send-otp", (req, res) => {
+
+    const { phone } = req.body;
+
+    if (!phone) {
+        return res.send({
+            status: "failed",
+            message: "Phone number required"
+        });
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 9000);
+
+    users[phone] = {
+        otp: otp,
+        verified: false
+    };
+
+    console.log(`📩 OTP for ${phone}: ${otp}`);
+
+    res.send({
+        status: "success",
+        message: "OTP Sent"
+    });
+});
+
+// Verify OTP
+app.post("/verify-otp", (req, res) => {
+
+    const { phone, otp } = req.body;
+
+    if (!users[phone]) {
+        return res.send({
+            status: "failed",
+            message: "User not found"
+        });
+    }
+
+    if (users[phone].otp == otp) {
+
+        users[phone].verified = true;
+
+        const token = crypto.randomBytes(16).toString("hex");
+
+        res.send({
+            status: "success",
+            token: token
+        });
+
+    } else {
+
+        res.send({
+            status: "
